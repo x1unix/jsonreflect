@@ -209,9 +209,17 @@ func TestParser_Parse(t *testing.T) {
 				"bar": newBoolean(newPosition(17, 20), true),
 			}),
 		},
+		"nested object": {
+			src: TestdataFixture("obj_nested.json"),
+			want: newObject(0, 34, map[string]Value{
+				"foo": newObject(11, 32, map[string]Value{
+					"bar": newString(newPosition(24, 28), []byte(`"baz"`)),
+				}),
+			}),
+		},
 		"plain object with values": {
 			src: TestdataFixture("obj_simple.json"),
-			want: newObject(0, 287, map[string]Value{
+			want: newObject(0, 288, map[string]Value{
 				"id": &Number{
 					baseValue: newBaseValue(10, 11),
 					mantissa:  10,
@@ -219,26 +227,26 @@ func TestParser_Parse(t *testing.T) {
 				"user": newString(newPosition(24, 30), []byte(`"admin"`)),
 				"age": &Number{
 					baseValue: newBaseValue(42, 43),
-					mantissa:  10,
+					mantissa:  32,
 				},
 				"created_at": newString(newPosition(62, 83), []byte(`"2009-11-10T23:00:00Z"`)),
-				"roles": newArray(newPosition(0, 0),
-					newString(newPosition(0, 0), []byte("root")),
-					newString(newPosition(0, 0), []byte("owner"))),
-				"active": newBoolean(newPosition(0, 0), true),
+				"roles": newArray(newPosition(97, 113),
+					newString(newPosition(98, 103), []byte(`"root"`)),
+					newString(newPosition(106, 112), []byte(`"owner"`))),
+				"active": newBoolean(newPosition(128, 131), true),
 				"rating": &Number{
-					baseValue: newBaseValue(42, 43),
+					baseValue: newBaseValue(146, 152),
 					mantissa:  -3,
 					expoLen:   4,
 					exponent:  1415,
 					IsFloat:   true,
 					IsSigned:  true,
 				},
-				"ref":         newNull(newPosition(0, 0)),
-				"x-meta-salt": newString(newPosition(0, 0), []byte(`"d3b07384d113edec49eaa6238ad5ff00"`)),
-				"meta": newObject(0, 0, map[string]Value{
-					"first_name": newString(newPosition(0, 0), []byte(`"John"`)),
-					"last_name":  newString(newPosition(0, 0), []byte(`"Doe"`)),
+				"ref":         newNull(newPosition(164, 167)),
+				"x-meta-salt": newString(newPosition(187, 220), []byte(`"d3b07384d113edec49eaa6238ad5ff00"`)),
+				"meta": newObject(233, 286, map[string]Value{
+					"first_name": newString(newPosition(253, 258), []byte(`"John"`)),
+					"last_name":  newString(newPosition(278, 282), []byte(`"Doe"`)),
 				}),
 			}),
 		},

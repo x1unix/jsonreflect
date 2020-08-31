@@ -147,6 +147,7 @@ loop:
 					// no trailing comma before object close
 					return nil, NewUnexpectedCharacterError(start, pos, char)
 				}
+				curPos = pos
 				break loop
 			case tokenDelimiter:
 				if len(elems) == 0 || hadComma {
@@ -177,6 +178,7 @@ loop:
 			if err != nil {
 				return nil, err
 			}
+
 			curPos = val.Ref().End + 1
 			elems[lastKey] = val
 			expect = objectExpectKey
