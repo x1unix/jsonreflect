@@ -22,24 +22,24 @@ func TestParser_Parse(t *testing.T) {
 		want    Value
 	}{
 		"single int number": {
-			skip: true,
-			src:  FixtureFromString("1024"),
+			//skip: true,
+			src: FixtureFromString("1024"),
 			want: &Number{
 				baseValue: newBaseValue(0, 3),
 				mantissa:  1024,
 			},
 		},
 		"single int number with padding": {
-			skip: true,
-			src:  FixtureFromString("\t\n1024\n"),
+			//skip: true,
+			src: FixtureFromString("\t\n1024\n"),
 			want: &Number{
 				baseValue: newBaseValue(2, 5),
 				mantissa:  1024,
 			},
 		},
 		"single float": {
-			skip: true,
-			src:  FixtureFromString("10.24"),
+			//skip: true,
+			src: FixtureFromString("10.24"),
 			want: &Number{
 				baseValue: newBaseValue(0, 4),
 				expoLen:   2,
@@ -49,8 +49,8 @@ func TestParser_Parse(t *testing.T) {
 			},
 		},
 		"single float with padding": {
-			skip: true,
-			src:  FixtureFromString("\t10.24 "),
+			//skip: true,
+			src: FixtureFromString("\t10.24 "),
 			want: &Number{
 				baseValue: newBaseValue(1, 5),
 				expoLen:   2,
@@ -60,40 +60,44 @@ func TestParser_Parse(t *testing.T) {
 			},
 		},
 		"invalid number": {
-			skip:    true,
+			//skip:    true,
 			src:     FixtureFromString("\t10fuu"),
-			wantErr: `unexpected character "f"`,
+			wantErr: `unexpected "10fuu"`,
 		},
 		"single true boolean": {
-			skip: true,
+			//skip: true,
 			src:  FixtureFromString(" true\t"),
 			want: newBoolean(newPosition(1, 4), true),
 		},
 		"not bool but starts with bool expr": {
-			// Fails now, needs refactor!!
-			skip:    true,
+			//skip:    true,
 			src:     FixtureFromString(" falsebuttrue\t"),
-			wantErr: `unexpected character "f"`,
+			wantErr: `unexpected "falsebuttrue"`,
 		},
 		"single false boolean": {
-			skip: true,
+			//skip: true,
 			src:  FixtureFromString("\n false\t "),
 			want: newBoolean(newPosition(2, 6), false),
 		},
 		"single bad boolean": {
-			skip:    true,
+			//skip:    true,
 			src:     FixtureFromString("\n boo\t "),
 			wantErr: `unexpected character "b"`,
 		},
 		"single null": {
-			skip: true,
+			//skip: true,
 			src:  FixtureFromString("\n null\t "),
 			want: newNull(newPosition(2, 5)),
 		},
 		"incomplete null": {
-			skip:    true,
+			//skip:    true,
 			src:     FixtureFromString("nu"),
-			wantErr: `unexpected character "n"`,
+			wantErr: `unexpected "nu"`,
+		},
+		"invalid expr but contains null": {
+			//skip:    true,
+			src:     FixtureFromString("nullbutinvalid"),
+			wantErr: `unexpected "nullbutinvalid"`,
 		},
 	}
 

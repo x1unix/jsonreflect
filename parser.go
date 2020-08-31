@@ -157,7 +157,8 @@ outer:
 				continue
 			}
 
-			return nil, NewUnexpectedCharacterError(start, i, char)
+			endPos := p.getPosUntilNextDelimiter(start)
+			return nil, NewInvalidExprError(start, endPos, p.src[start:endPos])
 		}
 	}
 
@@ -178,8 +179,10 @@ func (p Parser) decodeScalarValue(start int) (Value, error) {
 	var (
 		match          []byte = nil
 		possibleResult Value
-		char           = p.src[start]
 	)
+
+	char := p.src[start]
+	exprEnd := p.getPosUntilNextDelimiter(start)
 	switch char {
 	case trueVal[0]:
 		match = trueVal
@@ -194,17 +197,47 @@ func (p Parser) decodeScalarValue(start int) (Value, error) {
 		return nil, NewUnexpectedCharacterError(start, start+1, char)
 	}
 
-	end := start + len(match)
-	if len(p.src) < end {
-		return nil, NewUnexpectedCharacterError(start, len(p.src), char)
+	expectEnd := start + len(match)
+	if expectEnd != exprEnd {
+		return nil, NewInvalidExprError(start, exprEnd, p.src[start:exprEnd])
 	}
 
-	str := p.src[start:end]
+	str := p.src[start:expectEnd]
 	if string(str) != string(match) {
-		return nil, NewUnexpectedCharacterError(start, end, char)
+		return nil, NewUnexpectedCharacterError(start, expectEnd, char)
 	}
 
 	return possibleResult, nil
+}
+
+func (p Parser) getPosUntilNextDelimiter(start int) int {
+	lastChar := start
+	for i := start; i < p.end; i++ {
+		switch p.src[i] {
+		case '\t', '\r', '\n', ' ', tokenDelimiter:
+			if i == start {
+				return start
+			}
+			return i
+		default:
+			lastChar = i + 1
+			continue
+		}
+	}
+	return lastChar
+}
+
+func (p Parser) isCharDelimiterOrPadding(index int) bool {
+	if p.end <= index {
+		return true
+	}
+
+	switch p.src[index] {
+	case '\t', '\r', '\n', ' ', tokenDelimiter:
+		return true
+	default:
+		return false
+	}
 }
 
 func isNullToken(src []byte, start int) bool {

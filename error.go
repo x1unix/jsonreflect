@@ -26,3 +26,7 @@ func (p ParseError) Error() string {
 func NewUnexpectedCharacterError(start, end int, char byte) ParseError {
 	return NewParseError(newPosition(start, end), "unexpected character %q", string(char))
 }
+
+func NewInvalidExprError(start, end int, val []byte) ParseError {
+	return NewParseError(newPosition(start, end), "unexpected %q", string(val))
+}
