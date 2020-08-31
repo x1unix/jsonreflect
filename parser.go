@@ -44,7 +44,25 @@ func (p Parser) hasElem(idx int) bool {
 }
 
 func (p *Parser) Parse() (Value, error) {
-	return p.parseValue(0)
+	v, err := p.parseValue(0)
+	if err != nil {
+		return nil, err
+	}
+
+	if v == nil {
+		// skip empty document check
+		return nil, nil
+	}
+
+	// throw error if something left after JSON contents
+	pos := v.Ref()
+	if p.end > pos.End {
+		got, ok := p.getPosUntilNextNonDelimiter(pos.End + 1)
+		if ok {
+			return nil, NewInvalidExprError(got, p.end, p.src[got:])
+		}
+	}
+	return v, nil
 }
 
 func (p Parser) getStartTokenAtPos(start int) (token, int, bool) {
@@ -112,15 +130,17 @@ func (p Parser) decodeArray(start int) (*Array, error) {
 }
 
 func (p Parser) decodeString(start int) (*String, error) {
-	end := 0
+	end := start
 	hasEscape := false
+	complete := false
 outer:
-	for i := 1; i <= p.end; i++ {
+	for i := start + 1; i < p.end; i++ {
 		char := p.src[i]
 		switch char {
 		case tokenString:
 			if !hasEscape {
-				end = start + i
+				end = i
+				complete = true
 				break outer
 			}
 
@@ -140,7 +160,12 @@ outer:
 		}
 	}
 
-	return newString(newPosition(start, end), p.src[start:end]), nil
+	if !complete {
+		endPos := p.getPosUntilNextDelimiter(start)
+		return nil, NewParseError(newPosition(start, endPos), "unterminated string '%s'", p.src[start:endPos])
+	}
+
+	return newString(newPosition(start, end), p.src[start:end+1]), nil
 }
 
 func (p Parser) decodeNumber(start int) (*Number, error) {
@@ -212,6 +237,18 @@ func (p Parser) decodeScalarValue(start int) (Value, error) {
 	}
 
 	return possibleResult, nil
+}
+
+func (p Parser) getPosUntilNextNonDelimiter(start int) (int, bool) {
+	for i := start; i < p.end; i++ {
+		switch p.src[i] {
+		case '\t', '\r', '\n', ' ':
+			continue
+		default:
+			return i, true
+		}
+	}
+	return 0, false
 }
 
 func (p Parser) getPosUntilNextDelimiter(start int) int {

@@ -69,6 +69,11 @@ func TestParser_Parse(t *testing.T) {
 			src:     FixtureFromString("\t10fuu"),
 			wantErr: `unexpected "10fuu"`,
 		},
+		"trash after number": {
+			//skip:    true,
+			src:     FixtureFromString("\t10 fuu"),
+			wantErr: `unexpected "fuu"`,
+		},
 		"single true boolean": {
 			//skip: true,
 			src:  FixtureFromString(" true\t"),
@@ -109,9 +114,35 @@ func TestParser_Parse(t *testing.T) {
 			src:     FixtureFromString("nullbutinvalid"),
 			wantErr: `unexpected "nullbutinvalid"`,
 		},
+		"single string": {
+			//skip: true,
+			src:  FixtureFromString("\t\"foo\\nbar\\\\baz\"\n"),
+			want: newString(newPosition(1, 15), []byte(`"foo\nbar\\baz"`)),
+		},
+		"unterminated single string": {
+			//skip: true,
+			src:     FixtureFromString("\t\"foo\\nbar"),
+			wantErr: `unterminated string '"foo\nbar'`,
+		},
+		"trash after valid contents": {
+			//skip: true,
+			src:     FixtureFromString(`"foo",abcd`),
+			wantErr: `unexpected ",abcd"`,
+		},
+	}
+
+	tName, ok := IsOnlySubTest()
+	if ok {
+		_, ok := cases[tName]
+		if !ok {
+			t.Skipf("No such table test %q", tName)
+		}
 	}
 
 	for n, c := range cases {
+		if ok && tName != n {
+			continue
+		}
 		if c.skip {
 			continue
 		}

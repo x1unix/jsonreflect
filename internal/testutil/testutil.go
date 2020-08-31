@@ -11,6 +11,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// IsOnlySubTest returns name of single subtest that should be run
+func IsOnlySubTest() (string, bool) {
+	return os.LookupEnv("ONLY_SUBTEST")
+}
+
 // ExpectedError is string which should be in expected error
 type ExpectedError string
 
