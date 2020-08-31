@@ -84,6 +84,11 @@ func TestParser_Parse(t *testing.T) {
 			src:     FixtureFromString("\n boo\t "),
 			wantErr: `unexpected character "b"`,
 		},
+		"same length and prefix as scalar but not scalar": {
+			//skip:    true,
+			src:     FixtureFromString("\ntruf\t "),
+			wantErr: `unexpected "truf"`,
+		},
 		"single null": {
 			//skip: true,
 			src:  FixtureFromString("\n null\t "),
