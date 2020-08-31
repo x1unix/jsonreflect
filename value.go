@@ -197,7 +197,7 @@ func newArray(pos Position, items ...Value) *Array {
 func (a Array) Interface() interface{} {
 	out := make([]interface{}, 0, len(a.Items))
 	for _, v := range a.Items {
-		out = append(out, v)
+		out = append(out, v.Interface())
 	}
 	return out
 }

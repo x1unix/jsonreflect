@@ -171,3 +171,35 @@ func TestNumber_Interface(t *testing.T) {
 	n2 := Number{mantissa: 2}
 	require.Equal(t, 2, n2.Interface())
 }
+
+func TestArray_Interface(t *testing.T) {
+	want := []interface{}{true, 3}
+	arr := Array{
+		Items: []Value{
+			Boolean{Value: true},
+			Number{mantissa: 3},
+		},
+	}
+	require.Equal(t, want, arr.Interface())
+}
+
+func TestObject_Interface(t *testing.T) {
+	want := map[string]interface{}{
+		"foo": true,
+		"bar": "baz",
+	}
+
+	o := Object{
+		Items: map[string]Value{
+			"foo": Boolean{Value: true},
+			"bar": String{rawValue: []byte(`"baz"`)},
+		},
+	}
+	require.Equal(t, want, o.ToMap())
+	require.Equal(t, want, o.Interface())
+}
+
+func TestNull_Interface(t *testing.T) {
+	n := Null{}
+	require.Nil(t, n.Interface())
+}
