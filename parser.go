@@ -136,7 +136,7 @@ loop:
 		switch expect {
 		case objectExpectDelimiter:
 			if char != tokenKeyDelimiter {
-				return nil, NewInvalidExprError(start, curPos, []byte{char})
+				return nil, NewInvalidExprError(start, pos, []byte{char})
 			}
 			expect = objectExpectValue
 			curPos++
@@ -145,35 +145,35 @@ loop:
 			case tokenObjectClose:
 				if hadComma {
 					// no trailing comma before object close
-					return nil, NewUnexpectedCharacterError(start, curPos, char)
+					return nil, NewUnexpectedCharacterError(start, pos, char)
 				}
 				break loop
 			case tokenDelimiter:
 				if len(elems) == 0 || hadComma {
 					// no multiple commas after prop
-					return nil, NewUnexpectedCharacterError(start, curPos, char)
+					return nil, NewUnexpectedCharacterError(start, pos, char)
 				}
 				hadComma = true
 				curPos++
 			case tokenString:
 				hadComma = false
-				str, err := p.decodeString(curPos)
+				str, err := p.decodeString(pos)
 				if err != nil {
 					return nil, err
 				}
 
 				lastKey, err = str.String()
 				if err != nil {
-					return nil, NewParseError(newPosition(start, curPos), err.Error())
+					return nil, NewParseError(newPosition(start, pos), err.Error())
 				}
 
 				curPos = str.Position.End + 1
 				expect = objectExpectDelimiter
 			default:
-				return nil, NewUnexpectedCharacterError(start, curPos, char)
+				return nil, NewUnexpectedCharacterError(start, pos, char)
 			}
 		case objectExpectValue:
-			val, err := p.parseValue(curPos, false)
+			val, err := p.parseValue(pos, false)
 			if err != nil {
 				return nil, err
 			}
