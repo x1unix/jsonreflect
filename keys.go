@@ -37,8 +37,13 @@ func (gks GroupedNumbericKeys) Less(i, j int) bool {
 
 // GroupNumericKeys groups set of keys with similar numeric prefix or suffix as array by pattern.
 //
-// Example of keys:
+// Example:
+//
+// Keys above can be grouped by numeric suffix:
 //	"fan1", "fan2", "fan1_2"
+// Using this call:
+//	re := regexp.MustCompile(`^fan([\d]+)[_]?([\d]+)?$`)
+//	result, err := obj.GroupNumericKeys(re, 2)
 func (o Object) GroupNumericKeys(regex *regexp.Regexp, matchCount int) (GroupedNumbericKeys, error) {
 	groupCount := matchCount + 1
 	var out GroupedNumbericKeys
