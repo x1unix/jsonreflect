@@ -13,15 +13,15 @@ var (
 type token = byte
 
 const (
-	tokenString      token = '"'
-	tokenValue       token = ':'
-	tokenDelimiter   token = ','
-	tokenObjectStart token = '{'
-	tokenObjectClose token = '}'
-	tokenArrayStart  token = '['
-	tokenArrayClose  token = ']'
-	tokenOther       token = 1
-	tokenEnd         token = 0
+	tokenString       token = '"'
+	tokenKeyDelimiter token = ':'
+	tokenDelimiter    token = ','
+	tokenObjectStart  token = '{'
+	tokenObjectClose  token = '}'
+	tokenArrayStart   token = '['
+	tokenArrayClose   token = ']'
+	tokenOther        token = 1
+	tokenEnd          token = 0
 )
 
 const (
@@ -100,9 +100,90 @@ func (p *Parser) parseValue(start int, root bool) (Value, error) {
 		return p.decodeString(pos)
 	case tokenArrayStart:
 		return p.decodeArray(pos)
+	case tokenObjectStart:
+		return p.decodeObject(pos)
 	default:
 		return nil, NewUnexpectedCharacterError(start, pos, tkn)
 	}
+}
+
+const (
+	objectExpectKey = iota
+	objectExpectDelimiter
+	objectExpectValue
+)
+
+func (p Parser) decodeObject(start int) (*Object, error) {
+	var lastKey string
+	elems := make(map[string]Value, 0)
+	curPos := start + 1 // next element should be after "{"
+	expect := objectExpectKey
+
+loop:
+	for {
+		if !p.hasElem(curPos) {
+			return nil, NewParseError(newPosition(start, curPos), "unterminated object")
+		}
+
+		pos, ok := p.getPosUntilNextNonDelimiter(curPos)
+		if !ok {
+			return nil, NewParseError(newPosition(start, pos), "unterminated object")
+		}
+
+		char := p.src[pos]
+		hadComma := false
+
+		switch expect {
+		case objectExpectDelimiter:
+			if char != tokenKeyDelimiter {
+				return nil, NewInvalidExprError(start, curPos, []byte{char})
+			}
+			expect = objectExpectValue
+			curPos++
+		case objectExpectKey:
+			switch char {
+			case tokenObjectClose:
+				if hadComma {
+					// no trailing comma before object close
+					return nil, NewUnexpectedCharacterError(start, curPos, char)
+				}
+				break loop
+			case tokenDelimiter:
+				if len(elems) == 0 || hadComma {
+					// no multiple commas after prop
+					return nil, NewUnexpectedCharacterError(start, curPos, char)
+				}
+				hadComma = true
+				curPos++
+			case tokenString:
+				hadComma = false
+				str, err := p.decodeString(curPos)
+				if err != nil {
+					return nil, err
+				}
+
+				lastKey, err = str.String()
+				if err != nil {
+					return nil, NewParseError(newPosition(start, curPos), err.Error())
+				}
+
+				curPos = str.Position.End + 1
+				expect = objectExpectDelimiter
+			default:
+				return nil, NewUnexpectedCharacterError(start, curPos, char)
+			}
+		case objectExpectValue:
+			val, err := p.parseValue(curPos, false)
+			if err != nil {
+				return nil, err
+			}
+			curPos = val.Ref().End + 1
+			elems[lastKey] = val
+			expect = objectExpectKey
+		}
+	}
+
+	return newObject(start, curPos, elems), nil
 }
 
 func (p Parser) decodeArray(start int) (*Array, error) {
@@ -196,7 +277,7 @@ outer:
 	for i := start; i < p.end; i++ {
 		char := p.src[i]
 		switch char {
-		case '\t', '\r', '\n', ' ', ',':
+		case '\t', '\r', '\n', ' ', ',', tokenObjectClose, tokenArrayClose:
 			break outer
 		case '.', charNumberNegative:
 			// chars '-' and '.' should appear once in numbers

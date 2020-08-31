@@ -1,6 +1,10 @@
 package jsonx
 
-import "math"
+import (
+	"fmt"
+	"math"
+	"strconv"
+)
 
 type Position struct {
 	Start int
@@ -47,19 +51,38 @@ func newString(pos Position, val []byte) *String {
 	}
 }
 
-// String() returns string value
-func (s String) String() string {
+// RawString returns quoted raw string
+func (s String) RawString() string {
 	return string(s.rawValue)
+}
+
+// String() returns unquoted string value
+func (s String) String() (string, error) {
+	str := s.RawString()
+	v, err := strconv.Unquote(str)
+	if err != nil {
+		return "", fmt.Errorf("jsonx.String: failed to unquote raw string value '%s': %w", s.rawValue, err)
+	}
+
+	return v, nil
 }
 
 // Number returns number quoted in string
 func (s String) Number() (*Number, error) {
-	return ParseNumber(s.Position, s.String(), 64)
+	v, err := s.String()
+	if err != nil {
+		return nil, err
+	}
+	return ParseNumber(s.Position, v, 64)
 }
 
 // Interface() implements json.Value
 func (s String) Interface() interface{} {
-	return s.String()
+	v, err := s.String()
+	if err != nil {
+		return s.RawString()
+	}
+	return v
 }
 
 // Boolean is boolean value
@@ -179,12 +202,19 @@ func (a Array) Interface() interface{} {
 	return out
 }
 
-// Object represents objects dictionary
+// Object represents key-value pair of object field and value
 type Object struct {
 	baseValue
 
 	// Items is key-value pair of object values
 	Items map[string]Value
+}
+
+func newObject(start, end int, items map[string]Value) *Object {
+	return &Object{
+		baseValue: newBaseValue(start, end),
+		Items:     items,
+	}
 }
 
 // ToMap returns key-value pair of items as interface value
@@ -198,7 +228,7 @@ func (o Object) ToMap() map[string]interface{} {
 
 // Interface() implements json.Value
 func (o Object) Interface() interface{} {
-	return o.Interface()
+	return o.ToMap()
 }
 
 // Null is JSON null value

@@ -186,6 +186,29 @@ func TestParser_Parse(t *testing.T) {
 				},
 				newNull(newPosition(27, 30))),
 		},
+		"empty object": {
+			src:  FixtureFromString("{}"),
+			want: newObject(0, 1, map[string]Value{}),
+		},
+		"object with one prop": {
+			src: FixtureFromString(`{"foo": 10}`),
+			want: newObject(0, 10, map[string]Value{
+				"foo": &Number{
+					baseValue: newBaseValue(8, 9),
+					mantissa:  10,
+				},
+			}),
+		},
+		"object with two prop": {
+			src: FixtureFromString(`{"foo": 10,"bar":true}`),
+			want: newObject(0, 21, map[string]Value{
+				"foo": &Number{
+					baseValue: newBaseValue(8, 9),
+					mantissa:  10,
+				},
+				"bar": newBoolean(newPosition(17, 20), true),
+			}),
+		},
 	}
 
 	tName, ok := IsOnlySubTest()
