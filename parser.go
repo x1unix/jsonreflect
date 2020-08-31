@@ -1,6 +1,8 @@
 package jsonx
 
 import (
+	"io"
+	"io/ioutil"
 	"unicode"
 )
 
@@ -27,16 +29,27 @@ const (
 	charNumberNegative = '-'
 )
 
+// Parser is JSON parser
 type Parser struct {
 	src []byte
 	end int
 }
 
+// NewParser creates a new parser instance
 func NewParser(src []byte) *Parser {
 	return &Parser{
 		src: src,
 		end: len(src),
 	}
+}
+
+// NewParserFromReader reads data from passed reader and returns reader instance
+func NewParserFromReader(r io.Reader) (*Parser, error) {
+	data, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+	return NewParser(data), nil
 }
 
 func (p Parser) hasElem(idx int) bool {
@@ -46,6 +59,9 @@ func (p Parser) hasElem(idx int) bool {
 	return true
 }
 
+// Parse parses passed JSON and returns parsed value.
+//
+// If passed JSON is empty, a nil value returned
 func (p *Parser) Parse() (Value, error) {
 	v, err := p.parseValue(0, true)
 	if err != nil {
