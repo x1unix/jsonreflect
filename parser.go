@@ -1,7 +1,6 @@
 package jsonx
 
 import (
-	"fmt"
 	"unicode"
 )
 
@@ -44,7 +43,7 @@ func (p Parser) hasElem(idx int) bool {
 }
 
 func (p *Parser) Parse() (Value, error) {
-	return nil, fmt.Errorf("not implemented")
+	return p.parseValue(0)
 }
 
 func (p Parser) getStartTokenAtPos(start int) (token, int, error) {
@@ -145,7 +144,7 @@ outer:
 func (p Parser) decodeNumber(start int) (*Number, error) {
 	var end int
 outer:
-	for i := start; i <= p.end; i++ {
+	for i := start; i < p.end; i++ {
 		char := p.src[i]
 		switch char {
 		case '\t', '\r', '\n', ' ', ',':
@@ -162,7 +161,7 @@ outer:
 		}
 	}
 
-	str := p.src[start:end]
+	str := p.src[start : end+1]
 	pos := Position{
 		Start: start,
 		End:   end,
@@ -184,13 +183,13 @@ func (p Parser) decodeScalarValue(start int) (Value, error) {
 	switch char {
 	case trueVal[0]:
 		match = trueVal
-		possibleResult = newBoolean(newPosition(start, start+len(falseVal)), true)
+		possibleResult = newBoolean(newPosition(start, start+len(trueVal)-1), true)
 	case falseVal[0]:
 		match = falseVal
-		possibleResult = newBoolean(newPosition(start, start+len(falseVal)), false)
+		possibleResult = newBoolean(newPosition(start, start+len(falseVal)-1), false)
 	case nullVal[0]:
 		match = nullVal
-		possibleResult = newNull(newPosition(start, start+len(falseVal)))
+		possibleResult = newNull(newPosition(start, start+len(nullVal)-1))
 	default:
 		return nil, NewUnexpectedCharacterError(start, start+1, char)
 	}
@@ -201,7 +200,7 @@ func (p Parser) decodeScalarValue(start int) (Value, error) {
 	}
 
 	str := p.src[start:end]
-	if string(str) != string(nullVal) {
+	if string(str) != string(match) {
 		return nil, NewUnexpectedCharacterError(start, end, char)
 	}
 

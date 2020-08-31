@@ -23,8 +23,9 @@ func ParseNumber(pos Position, str string, bitSize int) (*Number, error) {
 
 	if len(chunks) < 2 {
 		return &Number{
-			mantissa: mantissa,
-			IsSigned: isNegative,
+			baseValue: baseValue{pos},
+			mantissa:  mantissa,
+			IsSigned:  isNegative,
 		}, nil
 	}
 
@@ -35,8 +36,9 @@ func ParseNumber(pos Position, str string, bitSize int) (*Number, error) {
 	}
 
 	return &Number{
-		IsFloat:  true,
-		IsSigned: isNegative,
+		baseValue: baseValue{pos},
+		IsFloat:   true,
+		IsSigned:  isNegative,
 
 		mantissa: mantissa,
 		exponent: exponent,

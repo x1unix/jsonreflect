@@ -16,6 +16,10 @@ type baseValue struct {
 	Position Position
 }
 
+func newBaseValue(start, end int) baseValue {
+	return baseValue{newPosition(start, end)}
+}
+
 // Ref implements json.Value
 func (v baseValue) Ref() Position {
 	return v.Position
