@@ -197,6 +197,8 @@ func (p Parser) decodeScalarValue(start int) (Value, error) {
 		return nil, NewUnexpectedCharacterError(start, start+1, char)
 	}
 
+	// expression might start correctly but contain invalid values like:
+	// "nullsomething" or "fals"
 	expectEnd := start + len(match)
 	if expectEnd != exprEnd {
 		return nil, NewInvalidExprError(start, exprEnd, p.src[start:exprEnd])
