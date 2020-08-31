@@ -24,6 +24,10 @@ const (
 	tokenEnd         token = 0
 )
 
+const (
+	charNumberNegative = '-'
+)
+
 type Parser struct {
 	src []byte
 	end int
@@ -184,6 +188,9 @@ outer:
 }
 
 func (p Parser) decodeNumber(start int) (*Number, error) {
+	// keep track of chars that should appear only once
+	once := make(map[byte]struct{}, 2)
+
 	var end int
 outer:
 	for i := start; i < p.end; i++ {
@@ -191,7 +198,14 @@ outer:
 		switch char {
 		case '\t', '\r', '\n', ' ', ',':
 			break outer
-		case '.':
+		case '.', charNumberNegative:
+			// chars '-' and '.' should appear once in numbers
+			if _, ok := once[char]; ok {
+				endPos := p.getPosUntilNextDelimiter(start)
+				return nil, NewInvalidExprError(start, endPos, p.src[start:endPos])
+			}
+
+			once[char] = struct{}{}
 			end = i
 		default:
 			if unicode.IsNumber(rune(char)) {
@@ -213,7 +227,8 @@ outer:
 }
 
 func (p Parser) decodeScalarValue(start int, root bool) (Value, error) {
-	if unicode.IsNumber(rune(p.src[start])) {
+	// numbers can start with number (obviously) or negative symbol (-)
+	if char := p.src[start]; unicode.IsNumber(rune(char)) || char == charNumberNegative {
 		return p.decodeNumber(start)
 	}
 

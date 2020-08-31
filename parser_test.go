@@ -64,6 +64,26 @@ func TestParser_Parse(t *testing.T) {
 				IsFloat:   true,
 			},
 		},
+		"negative float": {
+			//skip: true,
+			src: FixtureFromString("-10.24"),
+			want: &Number{
+				baseValue: newBaseValue(0, 5),
+				expoLen:   2,
+				mantissa:  -10,
+				exponent:  24,
+				IsFloat:   true,
+				IsSigned:  true,
+			},
+		},
+		"invalid float with multiple dots": {
+			src:     FixtureFromString(" 10.20.30 "),
+			wantErr: `unexpected "10.20.30" (in range 1:9)`,
+		},
+		"invalid negative float with multiple negative chars": {
+			src:     FixtureFromString(" ----10"),
+			wantErr: `unexpected "----10" (in range 1:7)`,
+		},
 		"invalid number": {
 			//skip:    true,
 			src:     FixtureFromString("\t10fuu"),
@@ -153,11 +173,18 @@ func TestParser_Parse(t *testing.T) {
 		"array of scalar values": {
 			//skip: true,
 			src: TestdataFixture("arr_scalar.json"),
-			want: newArray(newPosition(0, 26),
+			want: newArray(newPosition(0, 32),
 				newBoolean(newPosition(1, 4), true),
 				newBoolean(newPosition(7, 11), false),
 				newString(newPosition(14, 18), []byte(`"foo"`)),
-				newNull(newPosition(21, 24))),
+				&Number{
+					baseValue: newBaseValue(21, 24),
+					mantissa:  32,
+					exponent:  2,
+					expoLen:   1,
+					IsFloat:   true,
+				},
+				newNull(newPosition(27, 30))),
 		},
 	}
 
