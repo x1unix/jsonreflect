@@ -198,6 +198,34 @@ func TestParser_Parse(t *testing.T) {
 			src:     FixtureFromString(`{"foo": 32,"bar":32,}`),
 			wantErr: ExpectedError(`unexpected character "}" (in range 19:20)`),
 		},
+		"object - unterminated": {
+			src:     FixtureFromString(`{"foo": 32,"bar":32`),
+			wantErr: ExpectedError(`unterminated object (in range 0:19)`),
+		},
+		"object - invalid value separator": {
+			src:     FixtureFromString(`{"foo":"bar",,`),
+			wantErr: ExpectedError(`unexpected character "," (in range 0:13)`),
+		},
+		"object - invalid key-value separator": {
+			src:     FixtureFromString(`{"foo"-32}`),
+			wantErr: ExpectedError(`unexpected "-" (in range 0:6)`),
+		},
+		"object - non string literal key": {
+			src:     FixtureFromString(`{10: 32}`),
+			wantErr: ExpectedError(`unexpected character "1" (in range 0:1)`),
+		},
+		"object - invalid string literal key": {
+			src:     FixtureFromString(`{"\c": 32}`),
+			wantErr: ExpectedError(`jsonx.String: failed to unquote raw string value '"\c"': invalid syntax (in range 0:1)`),
+		},
+		"object - unterminated with padding": {
+			src:     FixtureFromString("{\"foo\":\t\n"),
+			wantErr: ExpectedError(`unterminated object (in range 0:7)`),
+		},
+		"invalid object value": {
+			src:     FixtureFromString(`{"foo": fals}`),
+			wantErr: ExpectedError(`unexpected "fals" (in range 8:12)`),
+		},
 		"object with one prop": {
 			src: FixtureFromString(`{"foo": 10}`),
 			want: newObject(0, 10, map[string]Value{

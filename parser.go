@@ -127,7 +127,7 @@ loop:
 
 		pos, ok := p.getPosUntilNextNonDelimiter(curPos)
 		if !ok {
-			return nil, NewParseError(newPosition(start, pos), "unterminated object")
+			return nil, NewParseError(newPosition(start, curPos), "unterminated object")
 		}
 
 		char := p.src[pos]
