@@ -34,7 +34,7 @@ func ExampleObject_GroupNumericKeys() {
 	//
 	// see more examples in keys_test.go
 	re := regexp.MustCompile(`^fan([\d]+)?$`)
-	src := []byte(`{"fan3": 30, "fan1": 10, "fan2": 20, "foo": "bar"}`)
+	src := []byte(`{"fan3": 310, "fan1": 110, "fan2": 210, "foo": "bar"}`)
 	doc, _ := NewParser(src).Parse()
 
 	// Group keys by "fan[0-9]" pattern with regex and only 1 group match
@@ -44,9 +44,9 @@ func ExampleObject_GroupNumericKeys() {
 		fmt.Println(item.Order, item.Key, obj.Items[item.Key].Interface())
 	}
 	// Output:
-	// [1] fan1 10
-	// [2] fan2 20
-	// [3] fan3 30
+	// [1] fan1 110
+	// [2] fan2 210
+	// [3] fan3 310
 }
 
 func must(err error) {
