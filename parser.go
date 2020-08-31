@@ -20,7 +20,8 @@ const (
 	tokenObjectClose token = '}'
 	tokenArrayStart  token = '['
 	tokenArrayClose  token = ']'
-	tokenOther       token = 0
+	tokenOther       token = 1
+	tokenEnd         token = 0
 )
 
 type Parser struct {
@@ -46,7 +47,7 @@ func (p *Parser) Parse() (Value, error) {
 	return p.parseValue(0)
 }
 
-func (p Parser) getStartTokenAtPos(start int) (token, int, error) {
+func (p Parser) getStartTokenAtPos(start int) (token, int, bool) {
 	for i := start; i < p.end; i++ {
 		switch t := p.src[i]; t {
 		case '\t', '\r', '\n', ' ':
@@ -55,18 +56,19 @@ func (p Parser) getStartTokenAtPos(start int) (token, int, error) {
 		case tokenString,
 			tokenObjectStart,
 			tokenArrayStart:
-			return t, i, nil
+			return t, i, false
 		default:
-			return tokenOther, i, nil
+			return tokenOther, i, false
 		}
 	}
-	return tokenOther, start, nil
+	return 0, start, true
 }
 
 func (p *Parser) parseValue(start int) (Value, error) {
-	tkn, pos, err := p.getStartTokenAtPos(start)
-	if err != nil {
-		return nil, err
+	tkn, pos, end := p.getStartTokenAtPos(start)
+	if end {
+		// return nil for empty document
+		return nil, nil
 	}
 
 	switch tkn {
@@ -217,9 +219,9 @@ func (p Parser) getPosUntilNextDelimiter(start int) int {
 	for i := start; i < p.end; i++ {
 		switch p.src[i] {
 		case '\t', '\r', '\n', ' ', tokenDelimiter:
-			if i == start {
-				return start
-			}
+			//if i == start {
+			//	return start
+			//}
 			return i
 		default:
 			lastChar = i + 1
@@ -240,14 +242,4 @@ func (p Parser) isCharDelimiterOrPadding(index int) bool {
 	default:
 		return false
 	}
-}
-
-func isNullToken(src []byte, start int) bool {
-	end := start + len(nullVal)
-	if len(src) < end {
-		return false
-	}
-
-	str := src[start:end]
-	return string(str) == string(nullVal)
 }

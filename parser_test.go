@@ -21,6 +21,11 @@ func TestParser_Parse(t *testing.T) {
 		wantErr ExpectedError
 		want    Value
 	}{
+		"empty document": {
+			//skip: true
+			src:  FixtureFromString("\t\r\n "),
+			want: nil,
+		},
 		"single int number": {
 			//skip: true,
 			src: FixtureFromString("1024"),
@@ -118,7 +123,6 @@ func TestParser_Parse(t *testing.T) {
 				return
 			}
 
-			require.NotNil(t, got)
 			require.Equal(t, c.want, got)
 		})
 	}

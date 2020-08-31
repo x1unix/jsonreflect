@@ -44,7 +44,7 @@ func (x ExpectedError) AssertError(t *testing.T, err error) bool {
 	}
 
 	if !strings.Contains(err.Error(), string(x)) {
-		t.Fatalf("error %q should contain %q", err.Error(), x)
+		t.Fatalf("error '%s' should contain '%s'", err.Error(), x)
 	}
 
 	return false
