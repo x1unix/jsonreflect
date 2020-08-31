@@ -206,7 +206,7 @@ func (p Parser) decodeScalarValue(start int) (Value, error) {
 
 	str := p.src[start:expectEnd]
 	if string(str) != string(match) {
-		return nil, NewUnexpectedCharacterError(start, expectEnd, char)
+		return nil, NewInvalidExprError(start, exprEnd, p.src[start:exprEnd])
 	}
 
 	return possibleResult, nil
