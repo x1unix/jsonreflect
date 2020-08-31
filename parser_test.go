@@ -129,6 +129,36 @@ func TestParser_Parse(t *testing.T) {
 			src:     FixtureFromString(`"foo",abcd`),
 			wantErr: `unexpected ",abcd"`,
 		},
+		"empty array": {
+			src:  FixtureFromString("[]"),
+			want: newArray(newPosition(0, 1)),
+		},
+		"empty array with paddings": {
+			src:  FixtureFromString("[\t\n ]"),
+			want: newArray(newPosition(0, 4)),
+		},
+		"unterminated array": {
+			src:     FixtureFromString("[\t\n true"),
+			wantErr: `unterminated array statement (in range 0:8)`,
+		},
+		"array with trailing comma": {
+			src:     FixtureFromString("[\t\n true ,]"),
+			wantErr: `unexpected character "," (in range 9:10)`,
+		},
+		"simple array": {
+			src: FixtureFromString(`[true]`),
+			want: newArray(newPosition(0, 5),
+				newBoolean(newPosition(1, 4), true)),
+		},
+		"array of scalar values": {
+			//skip: true,
+			src: TestdataFixture("arr_scalar.json"),
+			want: newArray(newPosition(0, 26),
+				newBoolean(newPosition(1, 4), true),
+				newBoolean(newPosition(7, 11), false),
+				newString(newPosition(14, 18), []byte(`"foo"`)),
+				newNull(newPosition(21, 24))),
+		},
 	}
 
 	tName, ok := IsOnlySubTest()

@@ -45,7 +45,7 @@ func (x ExpectedError) AssertError(t *testing.T, err error) bool {
 	}
 
 	if x.Empty() {
-		t.Fatalf("unexpected error: %#v", err)
+		t.Fatalf("unexpected error: '%[1]s'\n\n\tRaw: %#[1]v", err)
 	}
 
 	if !strings.Contains(err.Error(), string(x)) {

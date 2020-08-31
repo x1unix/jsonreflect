@@ -44,7 +44,7 @@ func (p Parser) hasElem(idx int) bool {
 }
 
 func (p *Parser) Parse() (Value, error) {
-	v, err := p.parseValue(0)
+	v, err := p.parseValue(0, true)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func (p Parser) getStartTokenAtPos(start int) (token, int, bool) {
 	return 0, start, true
 }
 
-func (p *Parser) parseValue(start int) (Value, error) {
+func (p *Parser) parseValue(start int, root bool) (Value, error) {
 	tkn, pos, end := p.getStartTokenAtPos(start)
 	if end {
 		// return nil for empty document
@@ -91,7 +91,7 @@ func (p *Parser) parseValue(start int) (Value, error) {
 
 	switch tkn {
 	case tokenOther:
-		return p.decodeScalarValue(pos)
+		return p.decodeScalarValue(pos, root)
 	case tokenString:
 		return p.decodeString(pos)
 	case tokenArrayStart:
@@ -102,29 +102,44 @@ func (p *Parser) parseValue(start int) (Value, error) {
 }
 
 func (p Parser) decodeArray(start int) (*Array, error) {
-	elems := make([]Value, 0, 2)
-	curPos := start + 1 // next element should be after "[" char
+	var elems []Value
+	curPos := start + 1      // next element should be after "[" char
+	prevIsDelimiter := false // handle trailing commas
 	for {
-		if p.hasElem(curPos) {
-			return nil, NewParseError(newPosition(start, start), "unterminated array statement")
+		if !p.hasElem(curPos) {
+			return nil, NewParseError(newPosition(start, curPos), "unterminated array statement")
 		}
 
 		switch char := p.src[curPos]; char {
+		case '\t', '\r', '\n', ' ':
+			curPos++
+			continue
 		case tokenDelimiter:
-			if !p.hasElem(curPos + 1) {
-				return nil, NewParseError(newPosition(start, curPos), "unterminated array statement")
+			if prevIsDelimiter {
+				return nil, NewUnexpectedCharacterError(curPos-1, curPos, tokenDelimiter)
 			}
-			val, err := p.parseValue(curPos + 1)
+
+			prevIsDelimiter = true
+			curPos++
+		case tokenArrayClose:
+			if prevIsDelimiter {
+				return nil, NewUnexpectedCharacterError(curPos-1, curPos, tokenDelimiter)
+			}
+			return newArray(newPosition(start, curPos), elems...), nil
+		default:
+			prevIsDelimiter = false
+			val, err := p.parseValue(curPos, false)
 			if err != nil {
 				return nil, err
 			}
 
+			if elems == nil {
+				// allocate slice of values only if necessary
+				elems = make([]Value, 0, 2)
+			}
+
 			curPos = val.Ref().End + 1
 			elems = append(elems, val)
-		case tokenArrayClose:
-			return newArray(newPosition(start, curPos), elems), nil
-		default:
-			return nil, NewUnexpectedCharacterError(start, curPos, char)
 		}
 	}
 }
@@ -197,7 +212,7 @@ outer:
 	return ParseNumber(pos, string(str), 64)
 }
 
-func (p Parser) decodeScalarValue(start int) (Value, error) {
+func (p Parser) decodeScalarValue(start int, root bool) (Value, error) {
 	if unicode.IsNumber(rune(p.src[start])) {
 		return p.decodeNumber(start)
 	}
@@ -224,14 +239,16 @@ func (p Parser) decodeScalarValue(start int) (Value, error) {
 		return nil, NewUnexpectedCharacterError(start, start+1, char)
 	}
 
-	// expression might start correctly but contain invalid values like:
-	// "nullsomething" or "fals"
-	expectEnd := start + len(match)
-	if expectEnd != exprEnd {
-		return nil, NewInvalidExprError(start, exprEnd, p.src[start:exprEnd])
+	if root {
+		// expression might start correctly but contain invalid values like:
+		// "nullsomething" or "fals"
+		expectEnd := start + len(match)
+		if expectEnd != exprEnd {
+			return nil, NewInvalidExprError(start, exprEnd, p.src[start:exprEnd])
+		}
 	}
 
-	str := p.src[start:expectEnd]
+	str := p.src[start:exprEnd]
 	if string(str) != string(match) {
 		return nil, NewInvalidExprError(start, exprEnd, p.src[start:exprEnd])
 	}
@@ -255,7 +272,7 @@ func (p Parser) getPosUntilNextDelimiter(start int) int {
 	lastChar := start
 	for i := start; i < p.end; i++ {
 		switch p.src[i] {
-		case '\t', '\r', '\n', ' ', tokenDelimiter:
+		case '\t', '\r', '\n', ' ', tokenDelimiter, tokenArrayClose, tokenObjectClose:
 			//if i == start {
 			//	return start
 			//}

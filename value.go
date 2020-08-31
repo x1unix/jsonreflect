@@ -162,7 +162,7 @@ type Array struct {
 	Items []Value
 }
 
-func newArray(pos Position, items []Value) *Array {
+func newArray(pos Position, items ...Value) *Array {
 	return &Array{
 		baseValue: baseValue{pos},
 		Length:    len(items),
