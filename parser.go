@@ -21,7 +21,6 @@ const (
 	tokenArrayStart   token = '['
 	tokenArrayClose   token = ']'
 	tokenOther        token = 1
-	tokenEnd          token = 0
 )
 
 const (
