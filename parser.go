@@ -118,7 +118,7 @@ func (p Parser) decodeObject(start int) (*Object, error) {
 	elems := make(map[string]Value, 0)
 	curPos := start + 1 // next element should be after "{"
 	expect := objectExpectKey
-
+	hadComma := false
 loop:
 	for {
 		if !p.hasElem(curPos) {
@@ -131,7 +131,6 @@ loop:
 		}
 
 		char := p.src[pos]
-		hadComma := false
 
 		switch expect {
 		case objectExpectDelimiter:
@@ -145,7 +144,7 @@ loop:
 			case tokenObjectClose:
 				if hadComma {
 					// no trailing comma before object close
-					return nil, NewUnexpectedCharacterError(start, pos, char)
+					return nil, NewUnexpectedCharacterError(pos-1, pos, char)
 				}
 				curPos = pos
 				break loop

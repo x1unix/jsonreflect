@@ -190,6 +190,14 @@ func TestParser_Parse(t *testing.T) {
 			src:  FixtureFromString("{}"),
 			want: newObject(0, 1, map[string]Value{}),
 		},
+		"object - unterminated prop name": {
+			src:     FixtureFromString(`{"foo`),
+			wantErr: ExpectedError(`unterminated string '"foo' (in range 1:5)`),
+		},
+		"object - trailing comma": {
+			src:     FixtureFromString(`{"foo": 32,"bar":32,}`),
+			wantErr: ExpectedError(`unexpected character "}" (in range 19:20)`),
+		},
 		"object with one prop": {
 			src: FixtureFromString(`{"foo": 10}`),
 			want: newObject(0, 10, map[string]Value{
