@@ -2,7 +2,7 @@ package jsonx
 
 import (
 	"fmt"
-	"math"
+	"io"
 	"strconv"
 )
 
@@ -90,6 +90,9 @@ type Value interface {
 
 	// Interface returns interface{} value
 	Interface() interface{}
+
+	// marshal serializes value with specified params
+	marshal(io.Writer, *marshalFormatter) error
 }
 
 // String represents JSON string
@@ -103,6 +106,11 @@ func newString(pos Position, val []byte) *String {
 		baseValue: baseValue{pos},
 		rawValue:  val,
 	}
+}
+
+func (s String) marshal(w io.Writer, _ *marshalFormatter) error {
+	_, err := w.Write(s.rawValue)
+	return err
 }
 
 // Type implements jsonx.Value
@@ -159,6 +167,11 @@ func newBoolean(pos Position, val bool) Boolean {
 	}
 }
 
+func (b Boolean) marshal(w io.Writer, _ *marshalFormatter) error {
+	_, err := w.Write([]byte(strconv.FormatBool(b.Value)))
+	return err
+}
+
 // Interface() implements json.Value
 func (b Boolean) Interface() interface{} {
 	return b.Value
@@ -169,147 +182,6 @@ func (_ Boolean) Type() Type {
 	return TypeBoolean
 }
 
-// Number represents json float64 number value
-type Number struct {
-	baseValue
-	mantissa int64
-	exponent uint64
-	expoLen  int
-
-	// IsFloat is floating point number flag
-	IsFloat bool
-
-	// IsSigned is signed number flag
-	IsSigned bool
-}
-
-// Type implements jsonx.Value
-func (_ Number) Type() Type {
-	return TypeNumber
-}
-
-// Interface() implements json.Value
-func (n Number) Interface() interface{} {
-	if n.IsFloat {
-		return n.Float64()
-	}
-	return n.Int()
-}
-
-// Float64 returns value as float64 number
-func (n Number) Float64() float64 {
-	if n.exponent == 0 {
-		return float64(n.mantissa)
-	}
-
-	exponent := float64(n.exponent) / math.Pow10(n.expoLen)
-	if n.mantissa < 0 {
-		exponent *= -1
-	}
-	return float64(n.mantissa) + exponent
-}
-
-// Float32 returns value as float32 number
-func (n Number) Float32() float32 {
-	return float32(n.Float64())
-}
-
-// Int returns value as integer number
-func (n Number) Int() int {
-	return int(n.mantissa)
-}
-
-// Int64 returns value as int64 number
-func (n Number) Int64() int64 {
-	return n.mantissa
-}
-
-// Int32 returns value as int32 number
-func (n Number) Int32() int32 {
-	return int32(n.mantissa)
-}
-
-// Uint returns value as unsigned integer number
-func (n Number) Uint() uint {
-	return uint(n.mantissa)
-}
-
-// Uint32 returns value as uint32 number
-func (n Number) Uint32() uint32 {
-	return uint32(n.mantissa)
-}
-
-// Uint64 returns value as uint64 number
-func (n Number) Uint64() uint64 {
-	return uint64(n.mantissa)
-}
-
-// Array represents JSON items list
-type Array struct {
-	baseValue
-
-	// Length is array length
-	Length int
-	// Items contains items list
-	Items []Value
-}
-
-func newArray(pos Position, items ...Value) *Array {
-	return &Array{
-		baseValue: baseValue{pos},
-		Length:    len(items),
-		Items:     items,
-	}
-}
-
-// Type implements jsonx.Value
-func (_ Array) Type() Type {
-	return TypeArray
-}
-
-// Interface implements json.Value
-func (a Array) Interface() interface{} {
-	out := make([]interface{}, 0, len(a.Items))
-	for _, v := range a.Items {
-		out = append(out, v.Interface())
-	}
-	return out
-}
-
-// Object represents key-value pair of object field and value
-type Object struct {
-	baseValue
-
-	// Items is key-value pair of object values
-	Items map[string]Value
-}
-
-func newObject(start, end int, items map[string]Value) *Object {
-	return &Object{
-		baseValue: newBaseValue(start, end),
-		Items:     items,
-	}
-}
-
-// Type implements jsonx.Value
-func (_ Object) Type() Type {
-	return TypeObject
-}
-
-// ToMap returns key-value pair of items as interface value
-func (o Object) ToMap() map[string]interface{} {
-	m := make(map[string]interface{}, len(o.Items))
-	for k, v := range o.Items {
-		m[k] = v.Interface()
-	}
-	return m
-}
-
-// Interface() implements json.Value
-func (o Object) Interface() interface{} {
-	return o.ToMap()
-}
-
 // Null is JSON null value
 type Null struct {
 	baseValue
@@ -318,6 +190,11 @@ type Null struct {
 // Type implements jsonx.Value
 func (_ Null) Type() Type {
 	return TypeNull
+}
+
+func (_ Null) marshal(w io.Writer, _ *marshalFormatter) error {
+	_, err := w.Write([]byte("null"))
+	return err
 }
 
 func newNull(pos Position) Null {
