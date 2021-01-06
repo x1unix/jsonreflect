@@ -39,6 +39,12 @@ func (o Object) Keys() []string {
 	return keys
 }
 
+// HasKey checks if key exists in object
+func (o Object) HasKey(keyName string) bool {
+	_, ok := o.Items[keyName]
+	return ok
+}
+
 func (o Object) marshal(w io.Writer, mf *marshalFormatter) error {
 	if len(o.Items) == 0 {
 		return mf.write(w, []byte{tokenObjectStart, tokenObjectClose})

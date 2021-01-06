@@ -1,5 +1,7 @@
 package jsonx
 
+import "fmt"
+
 //import (
 //	"encoding/json"
 //	"fmt"
@@ -29,3 +31,7 @@ package jsonx
 //	}
 //
 //}
+
+func UnmarshalValue(v Value, dst interface{}) error {
+	return fmt.Errorf("unimplemented!")
+}
