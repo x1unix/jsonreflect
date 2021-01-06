@@ -7,7 +7,7 @@ import (
 )
 
 // Type represents value type
-type Type = uint
+type Type uint
 
 const (
 	// TypeUnknown is invalid value type
@@ -31,6 +31,26 @@ const (
 	// TypeArray is array value type
 	TypeArray
 )
+
+// String returns value type as string
+func (t Type) String() string {
+	switch t {
+	case TypeNull:
+		return "null"
+	case TypeBoolean:
+		return "boolean"
+	case TypeNumber:
+		return "number"
+	case TypeString:
+		return "string"
+	case TypeObject:
+		return "object"
+	case TypeArray:
+		return "array"
+	default:
+		return "undefined"
+	}
+}
 
 type Position struct {
 	Start int
