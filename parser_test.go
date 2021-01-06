@@ -1,6 +1,8 @@
 package jsonx
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -316,6 +318,25 @@ func TestParser_Parse(t *testing.T) {
 				return
 			}
 			require.Equal(t, c.want.Type(), got.Type(), "type mismatch")
+		})
+	}
+}
+
+func TestUnmarshalCheck(t *testing.T) {
+	cases := map[string]struct{}{
+		"test_coins": {},
+	}
+
+	for n := range cases {
+		t.Run(n, func(t *testing.T) {
+			f, err := os.Open(filepath.Join("testdata", n+".json"))
+			require.NoError(t, err)
+			defer f.Close()
+			p, err := NewParserFromReader(f)
+			require.NoError(t, err)
+			got, err := p.Parse()
+			require.NoError(t, err, "parse failed")
+			t.Log(got)
 		})
 	}
 }

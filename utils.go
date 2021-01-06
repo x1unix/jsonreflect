@@ -9,7 +9,7 @@ import (
 // ParseNumber parses string into jsonx.Number
 func ParseNumber(pos Position, str string, bitSize int) (*Number, error) {
 	if str == "" || str == "0" {
-		return &Number{}, nil
+		return &Number{baseValue: baseValue{pos}}, nil
 	}
 
 	// strconv.ParseFloat is not precise enough
