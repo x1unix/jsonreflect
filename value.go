@@ -6,6 +6,32 @@ import (
 	"strconv"
 )
 
+// Type represents value type
+type Type = uint
+
+const (
+	// TypeUnknown is invalid value type
+	TypeUnknown Type = iota
+
+	// TypeNull is null value type
+	TypeNull
+
+	// TypeBoolean is boolean value type
+	TypeBoolean
+
+	// TypeNumber is number value type
+	TypeNumber
+
+	// TypeString is string value type
+	TypeString
+
+	// TypeObject is object value type
+	TypeObject
+
+	// TypeArray is array value type
+	TypeArray
+)
+
 type Position struct {
 	Start int
 	End   int
@@ -24,6 +50,11 @@ func newBaseValue(start, end int) baseValue {
 	return baseValue{newPosition(start, end)}
 }
 
+// Type implements json.Value
+func (v baseValue) Type() Type {
+	return TypeUnknown
+}
+
 // Ref implements json.Value
 func (v baseValue) Ref() Position {
 	return v.Position
@@ -33,6 +64,9 @@ func (v baseValue) Ref() Position {
 type Value interface {
 	// Ref returns reference to value in source
 	Ref() Position
+
+	// Type returns value type
+	Type() Type
 
 	// Interface returns interface{} value
 	Interface() interface{}
@@ -49,6 +83,11 @@ func newString(pos Position, val []byte) *String {
 		baseValue: baseValue{pos},
 		rawValue:  val,
 	}
+}
+
+// Type implements jsonx.Value
+func (_ String) Type() Type {
+	return TypeString
 }
 
 // RawString returns quoted raw string
@@ -105,6 +144,11 @@ func (b Boolean) Interface() interface{} {
 	return b.Value
 }
 
+// Type implements jsonx.Value
+func (_ Boolean) Type() Type {
+	return TypeBoolean
+}
+
 // Number represents json float64 number value
 type Number struct {
 	baseValue
@@ -117,6 +161,11 @@ type Number struct {
 
 	// IsSigned is signed number flag
 	IsSigned bool
+}
+
+// Type implements jsonx.Value
+func (_ Number) Type() Type {
+	return TypeNumber
 }
 
 // Interface() implements json.Value
@@ -193,7 +242,12 @@ func newArray(pos Position, items ...Value) *Array {
 	}
 }
 
-// Interface() implements json.Value
+// Type implements jsonx.Value
+func (_ Array) Type() Type {
+	return TypeArray
+}
+
+// Interface implements json.Value
 func (a Array) Interface() interface{} {
 	out := make([]interface{}, 0, len(a.Items))
 	for _, v := range a.Items {
@@ -217,6 +271,11 @@ func newObject(start, end int, items map[string]Value) *Object {
 	}
 }
 
+// Type implements jsonx.Value
+func (_ Object) Type() Type {
+	return TypeObject
+}
+
 // ToMap returns key-value pair of items as interface value
 func (o Object) ToMap() map[string]interface{} {
 	m := make(map[string]interface{}, len(o.Items))
@@ -234,6 +293,11 @@ func (o Object) Interface() interface{} {
 // Null is JSON null value
 type Null struct {
 	baseValue
+}
+
+// Type implements jsonx.Value
+func (_ Null) Type() Type {
+	return TypeNull
 }
 
 func newNull(pos Position) Null {

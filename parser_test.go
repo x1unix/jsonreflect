@@ -312,6 +312,10 @@ func TestParser_Parse(t *testing.T) {
 			}
 
 			require.Equal(t, c.want, got)
+			if c.want == nil {
+				return
+			}
+			require.Equal(t, c.want.Type(), got.Type(), "type mismatch")
 		})
 	}
 }
