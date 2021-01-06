@@ -1,5 +1,6 @@
-# go-jsonx
-Go package for JSON with advanced features. Batteries included
+# jsonreflect
+
+Package provides reflection features for JSON values.
 
 ## Goal
 
@@ -57,7 +58,7 @@ package myapi
 import (
 	"fmt"
 	
-	"github.com/x1unix/go-jsonx"
+	"github.com/x1unix/jsonreflect"
 )
 
 type Status struct {
@@ -70,32 +71,32 @@ func checkStatus(statuses ...Status) error
 // checkResponseError checks if response has an error
 func checkResponseError(resp []byte) error {
 	// Check if response has error
-    value, err := jsonx.NewParser(resp).Parse()
+    value, err := jsonreflect.NewParser(resp).Parse()
     if err != nil {
         // Invalid json
         return err
     }
     
     // cast response to object
-    obj, err := jsonx.ToObject(value)
+    obj, err := jsonreflect.ToObject(value)
     if err != nil {
     	// handle invalid response
     	return fmt.Errorf("unexpected response: %v", value.Interface())
     }
     
     statusVal := obj.Items["STATUS"]
-    switch jsonx.TypeOf(statusVal) {
-    case jsonx.TypeArray:
+    switch jsonreflect.TypeOf(statusVal) {
+    case jsonreflect.TypeArray:
         var statuses []Status
-        if err = jsonx.UnmarshalValue(statusVal, &statuses); err != nil {
+        if err = jsonreflect.UnmarshalValue(statusVal, &statuses); err != nil {
             return err
         }
         
         // perform check
         return checkStatus(statuses...)
-    case jsonx.TypeObject:
+    case jsonreflect.TypeObject:
     	status := &Status{}
-    	if err = jsonx.UnmarshalValue(statusVal, &status); err != nil {
+    	if err = jsonreflect.UnmarshalValue(statusVal, &status); err != nil {
     		return err
         }
         

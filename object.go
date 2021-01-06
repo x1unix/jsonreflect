@@ -1,4 +1,4 @@
-package jsonx
+package jsonreflect
 
 import (
 	"io"
@@ -20,7 +20,7 @@ func newObject(start, end int, items map[string]Value) *Object {
 	}
 }
 
-// Type implements jsonx.Value
+// Type implements jsonreflect.Value
 func (_ Object) Type() Type {
 	return TypeObject
 }

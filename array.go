@@ -1,4 +1,4 @@
-package jsonx
+package jsonreflect
 
 import "io"
 
@@ -50,7 +50,7 @@ func (arr Array) marshal(w io.Writer, mf *marshalFormatter) error {
 	return mf.write(w, []byte{tokenArrayClose})
 }
 
-// Type implements jsonx.Value
+// Type implements jsonreflect.Value
 func (_ Array) Type() Type {
 	return TypeArray
 }

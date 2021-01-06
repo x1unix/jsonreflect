@@ -1,12 +1,12 @@
-package jsonx
+package jsonreflect
 
 import "fmt"
 
 func newInvalidValueError(gotType, wantType Type) error {
-	return fmt.Errorf("cannot convert jsonx.Value of type %s to %s", gotType.String(), wantType.String())
+	return fmt.Errorf("cannot convert jsonreflect.Value of type %s to %s", gotType.String(), wantType.String())
 }
 
-// ToObject casts generic value to jsonx.Object.
+// ToObject casts generic value to jsonreflect.Object.
 // Passed value should be object type.
 //
 // Basically, it's alias to:
@@ -24,7 +24,7 @@ func ToObject(v Value) (*Object, error) {
 	return val, nil
 }
 
-// ToArray casts generic value to jsonx.Array.
+// ToArray casts generic value to jsonreflect.Array.
 // Passed value should be object type.
 //
 // Basically, it's alias to:

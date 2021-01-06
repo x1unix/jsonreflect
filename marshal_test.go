@@ -1,4 +1,4 @@
-package jsonx
+package jsonreflect
 
 import (
 	"io/ioutil"

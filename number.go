@@ -1,4 +1,4 @@
-package jsonx
+package jsonreflect
 
 import (
 	"io"
@@ -21,7 +21,7 @@ type Number struct {
 	IsSigned bool
 }
 
-// Type implements jsonx.Value
+// Type implements jsonreflect.Value
 func (_ Number) Type() Type {
 	return TypeNumber
 }

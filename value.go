@@ -1,4 +1,4 @@
-package jsonx
+package jsonreflect
 
 import (
 	"fmt"
@@ -123,7 +123,7 @@ func (s String) marshal(w io.Writer, _ *marshalFormatter) error {
 	return err
 }
 
-// Type implements jsonx.Value
+// Type implements jsonreflect.Value
 func (_ String) Type() Type {
 	return TypeString
 }
@@ -138,7 +138,7 @@ func (s String) String() (string, error) {
 	str := s.RawString()
 	v, err := strconv.Unquote(str)
 	if err != nil {
-		return "", fmt.Errorf("jsonx.String: failed to unquote raw string value '%s': %w", s.rawValue, err)
+		return "", fmt.Errorf("jsonreflect.String: failed to unquote raw string value '%s': %w", s.rawValue, err)
 	}
 
 	return v, nil
@@ -187,7 +187,7 @@ func (b Boolean) Interface() interface{} {
 	return b.Value
 }
 
-// Type implements jsonx.Value
+// Type implements jsonreflect.Value
 func (_ Boolean) Type() Type {
 	return TypeBoolean
 }
@@ -197,7 +197,7 @@ type Null struct {
 	baseValue
 }
 
-// Type implements jsonx.Value
+// Type implements jsonreflect.Value
 func (_ Null) Type() Type {
 	return TypeNull
 }

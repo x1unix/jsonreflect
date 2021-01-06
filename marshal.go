@@ -1,4 +1,4 @@
-package jsonx
+package jsonreflect
 
 import (
 	"bytes"
@@ -112,7 +112,7 @@ func (opts *MarshalOptions) formatter() *marshalFormatter {
 	}
 }
 
-// MarshalValue returns the JSON encoding of passed jsonx.Value
+// MarshalValue returns the JSON encoding of passed jsonreflect.Value
 //
 // Accepts optional argument which allows to specify indent.
 func MarshalValue(v Value, opts *MarshalOptions) ([]byte, error) {

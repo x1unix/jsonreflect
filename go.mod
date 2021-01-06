@@ -1,4 +1,4 @@
-module github.com/x1unix/go-jsonx
+module github.com/x1unix/jsonreflect
 
 go 1.14
 

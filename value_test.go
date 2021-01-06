@@ -1,11 +1,11 @@
-package jsonx
+package jsonreflect
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	. "github.com/x1unix/go-jsonx/internal/testutil"
+	. "github.com/x1unix/jsonreflect/internal/testutil"
 )
 
 func TestBaseValue_Ref(t *testing.T) {

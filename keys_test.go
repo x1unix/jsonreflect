@@ -1,11 +1,11 @@
-package jsonx
+package jsonreflect
 
 import (
 	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	. "github.com/x1unix/go-jsonx/internal/testutil"
+	. "github.com/x1unix/jsonreflect/internal/testutil"
 )
 
 func TestObject_GroupNumericKeys(t *testing.T) {

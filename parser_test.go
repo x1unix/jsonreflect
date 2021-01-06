@@ -1,4 +1,4 @@
-package jsonx
+package jsonreflect
 
 import (
 	"os"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	. "github.com/x1unix/go-jsonx/internal/testutil"
+	. "github.com/x1unix/jsonreflect/internal/testutil"
 )
 
 func TestNewParser(t *testing.T) {
@@ -218,7 +218,7 @@ func TestParser_Parse(t *testing.T) {
 		},
 		"object - invalid string literal key": {
 			src:     FixtureFromString(`{"\c": 32}`),
-			wantErr: ExpectedError(`jsonx.String: failed to unquote raw string value '"\c"': invalid syntax (in range 0:1)`),
+			wantErr: ExpectedError(`jsonreflect.String: failed to unquote raw string value '"\c"': invalid syntax (in range 0:1)`),
 		},
 		"object - unterminated with padding": {
 			src:     FixtureFromString("{\"foo\":\t\n"),
