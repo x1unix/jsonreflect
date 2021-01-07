@@ -1,5 +1,7 @@
 # jsonreflect
 
+![GoDoc](https://godoc.org/github.com/x1unix/jsonreflect?status.svg)
+
 Package provides reflection features for JSON values.
 
 ## Goal
@@ -15,7 +17,48 @@ Package might be useful in cases when unmarshal logic depends on source data str
 
 And for other cases of bad JSON structure design.
 
-## Example
+## Examples
+
+### Processing unknown values
+
+For instance, there is an object which only have a small subset of
+known fields and there is a need to separate known values from orphans for future processing.
+
+Example below shows how *jsonreflect* allows collecting all unknown fields on value unmarshal.
+
+```go
+package main
+
+import (
+    "fmt"
+	
+    "github.com/x1unix/jsonreflect"
+)
+
+type GenericResponse struct {
+    // Known fields
+    Status int      `json:"status"`
+    Payload []byte  `json:"payload"`
+    
+    // Container for unknown fields.
+    // Also, *json.Value can be used to get values as JSON object.
+    Orphan map[string]interface{}  `json:"..."`
+}
+
+func unmarshalGenericResponse(data []byte) error {
+    rsp := new(GenericResponse)
+    if err := jsonreflect.Unmarshal(data, rsp); err != nil {
+        return err
+    }
+    
+    // Process orphan fields
+    fmt.Println(rsp.Orphan)
+    return nil
+}
+
+```
+
+### Corrupted object
 
 For instance, we have an JSON response from some service with specified structure,
 but sometimes service returns response with different structure when internal error occurs.
@@ -71,7 +114,7 @@ func checkStatus(statuses ...Status) error
 // checkResponseError checks if response has an error
 func checkResponseError(resp []byte) error {
 	// Check if response has error
-    value, err := jsonreflect.NewParser(resp).Parse()
+    value, err := jsonreflect.ValueOf(resp)
     if err != nil {
         // Invalid json
         return err
