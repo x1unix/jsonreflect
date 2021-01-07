@@ -1,6 +1,14 @@
 package jsonreflect
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+var (
+	// ErrNotStringable means that value cannot be converted to string representation.
+	ErrNotStringable = errors.New("value not stringable")
+)
 
 type ParseError struct {
 	Position

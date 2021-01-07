@@ -80,14 +80,19 @@ func newBaseValue(start, end int) baseValue {
 	return baseValue{newPosition(start, end)}
 }
 
-// Type implements json.Value
+// Type implements jsonreflect.Value
 func (v baseValue) Type() Type {
 	return TypeUnknown
 }
 
-// Ref implements json.Value
+// Ref implements jsonreflect.Value
 func (v baseValue) Ref() Position {
 	return v.Position
+}
+
+// String implements jsonreflect.Value
+func (_ baseValue) String() (string, error) {
+	return "", ErrNotStringable
 }
 
 // Value is abstract JSON document value
@@ -100,6 +105,9 @@ type Value interface {
 
 	// Interface returns interface{} value
 	Interface() interface{}
+
+	// String returns string representation of a value
+	String() (string, error)
 
 	// marshal serializes value with specified params
 	marshal(io.Writer, *marshalFormatter) error
@@ -133,7 +141,7 @@ func (s String) RawString() string {
 	return string(s.rawValue)
 }
 
-// String() returns unquoted string value
+// String implements jsonreflect.Value
 func (s String) String() (string, error) {
 	str := s.RawString()
 	v, err := strconv.Unquote(str)
@@ -150,7 +158,7 @@ func (s String) Number() (*Number, error) {
 	if err != nil {
 		return nil, err
 	}
-	return ParseNumber(s.Position, v, 64)
+	return numberValueFromString(s.Position, v, 64)
 }
 
 // Interface() implements json.Value
@@ -177,6 +185,11 @@ func newBoolean(pos Position, val bool) Boolean {
 	}
 }
 
+// String implements jsonreflect.Value
+func (b Boolean) String() (string, error) {
+	return strconv.FormatBool(b.Value), nil
+}
+
 func (b Boolean) marshal(w io.Writer, _ *marshalFormatter) error {
 	_, err := w.Write([]byte(strconv.FormatBool(b.Value)))
 	return err
@@ -200,6 +213,11 @@ type Null struct {
 // Type implements jsonreflect.Value
 func (_ Null) Type() Type {
 	return TypeNull
+}
+
+// String implements jsonreflect.Value
+func (_ Null) String() (string, error) {
+	return "", nil
 }
 
 func (_ Null) marshal(w io.Writer, _ *marshalFormatter) error {

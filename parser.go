@@ -320,7 +320,7 @@ outer:
 		Start: start,
 		End:   end,
 	}
-	return ParseNumber(pos, string(str), 64)
+	return numberValueFromString(pos, string(str), 64)
 }
 
 func (p Parser) decodeScalarValue(start int, root bool) (Value, error) {

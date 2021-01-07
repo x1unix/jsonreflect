@@ -6,8 +6,8 @@ import (
 	"strings"
 )
 
-// ParseNumber parses string into jsonreflect.Number
-func ParseNumber(pos Position, str string, bitSize int) (*Number, error) {
+// numberValueFromString parses string into jsonreflect.Number
+func numberValueFromString(pos Position, str string, bitSize int) (*Number, error) {
 	if str == "" || str == "0" {
 		return &Number{baseValue: baseValue{pos}}, nil
 	}

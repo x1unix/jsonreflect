@@ -34,16 +34,24 @@ func (n Number) Interface() interface{} {
 	return n.Int()
 }
 
-func (n Number) marshal(w io.Writer, _ *marshalFormatter) error {
+func (n Number) asString() string {
 	if !n.IsFloat {
-		_, err := w.Write([]byte(strconv.Itoa(n.Int())))
-		return err
+		return strconv.Itoa(n.Int())
 	}
 	sb := strings.Builder{}
 	sb.WriteString(strconv.Itoa(n.Int()))
 	sb.WriteRune('.')
 	sb.WriteString(strconv.FormatUint(n.exponent, 10))
-	_, err := w.Write([]byte(sb.String()))
+	return sb.String()
+}
+
+// String implements jsonreflect.Value
+func (n Number) String() (string, error) {
+	return n.asString(), nil
+}
+
+func (n Number) marshal(w io.Writer, _ *marshalFormatter) error {
+	_, err := w.Write([]byte(n.asString()))
 	return err
 }
 

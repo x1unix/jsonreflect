@@ -24,6 +24,30 @@ func ToObject(v Value) (*Object, error) {
 	return val, nil
 }
 
+// ToNumber casts generic value to jsonreflect.Number.
+//
+// Method only supports number and string values.
+func ToNumber(v Value, bitSize int) (*Number, error) {
+	switch t := TypeOf(v); t {
+	case TypeNumber:
+		return v.(*Number), nil
+	case TypeString:
+		strval, err := v.String()
+		if err != nil {
+			return nil, err
+		}
+
+		numval, err := numberValueFromString(v.Ref(), strval, bitSize)
+		if err != nil {
+			return nil, fmt.Errorf("cannot cast %s value %q to %s", t, strval, TypeNumber)
+		}
+
+		return numval, nil
+	default:
+		return nil, fmt.Errorf("cannot cast %s value to %s", t, TypeNumber)
+	}
+}
+
 // ToArray casts generic value to jsonreflect.Array.
 // Passed value should be object type.
 //
