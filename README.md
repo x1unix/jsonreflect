@@ -96,7 +96,7 @@ Let's mitigate this issue.
 **Example**
 
 ```go
-package myapi
+package main
 
 import (
 	"fmt"
@@ -109,7 +109,7 @@ type Status struct {
 }
 
 // checkStatus function checks if one of statuses contains error
-func checkStatus(statuses ...Status) error
+func checkStatus(statuses []Status) error
 
 // checkResponseError checks if response has an error
 func checkResponseError(resp []byte) error {
@@ -128,26 +128,18 @@ func checkResponseError(resp []byte) error {
     }
     
     statusVal := obj.Items["STATUS"]
-    switch jsonreflect.TypeOf(statusVal) {
-    case jsonreflect.TypeArray:
-        var statuses []Status
-        if err = jsonreflect.UnmarshalValue(statusVal, &statuses); err != nil {
-            return err
-        }
-        
-        // perform check
-        return checkStatus(statuses...)
-    case jsonreflect.TypeObject:
-    	status := &Status{}
-    	if err = jsonreflect.UnmarshalValue(statusVal, &status); err != nil {
-    		return err
-        }
-        
-        // perform check
-        return checkStatus(*status)
-    default:
-        // handle other cases
-        return fmt.Errorf("unknown status type: %v", statusVal.Interface())
+    
+    // wrap status with array
+    if jsonreflect.TypeOf(statusVal) != jsonreflect.TypeArray {
+    	statusVal = jsonreflect.NewArray(statusVal)
     }
+    
+    // unmarshal value to struct and do our stuff
+    var statuses []Status
+    if err = jsonreflect.UnmarshalValue(statusVal, &statuses); err != nil {
+    	return err
+    }
+    
+    return checkStatus(statuses)
 }
 ```
