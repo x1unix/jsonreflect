@@ -1,6 +1,6 @@
 # jsonreflect
 
-![GoDoc](https://godoc.org/github.com/x1unix/jsonreflect?status.svg)
+[![GoDoc](https://godoc.org/github.com/x1unix/jsonreflect?status.svg)](https://pkg.go.dev/github.com/x1unix/jsonreflect)
 
 Package provides reflection features for JSON values.
 
@@ -113,7 +113,7 @@ func checkStatus(statuses ...Status) error
 
 // checkResponseError checks if response has an error
 func checkResponseError(resp []byte) error {
-	// Check if response has error
+    // Check if response has error
     value, err := jsonreflect.ValueOf(resp)
     if err != nil {
         // Invalid json
