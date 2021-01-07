@@ -52,16 +52,6 @@ func (t Type) String() string {
 	}
 }
 
-// TypeOf returns value type.
-//
-// Returns TypeNull if nil value passed.
-func TypeOf(v Value) Type {
-	if v == nil {
-		return TypeNull
-	}
-	return v.Type()
-}
-
 type Position struct {
 	Start int
 	End   int

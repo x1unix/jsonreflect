@@ -15,7 +15,7 @@ const (
 	tagNameJSON = "json"
 
 	tagOptionSkip          = "-"
-	tagOptionCollectOrphan = "*"
+	tagOptionCollectOrphan = "..."
 )
 
 var (
@@ -117,7 +117,7 @@ func tryCallUnmarshaler(v Value, dst reflect.Value) (bool, error) {
 //
 // Supported additional tags:
 //
-// - `json:"*"` tag used to collect all orphan values in JSON object to specified field.
+// - `json:"..."` tag used to collect all orphan values in JSON object to specified field.
 //
 // Supported special unmarshal types:
 //
